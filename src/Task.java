@@ -10,7 +10,7 @@ public class Task {
         this.name = name;
         this.desc = desc;
         this.id = id;
-        this.status = status.NEW;
+        this.status = status;
     }
 
     public String getName() {
