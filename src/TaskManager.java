@@ -91,10 +91,6 @@ public class TaskManager {
     }
 
     public Subtask createSubtask(Subtask subtask) {
-        if (subtask == null || !epics.containsKey(subtask.getEpicId())) {
-            return null;
-        }
-
         Subtask newSubtask = new Subtask(subtask.getName(), subtask.getDesc(), nextId++, subtask.getStatus(), subtask.getEpicId());
         subtasks.put(newSubtask.getId(), newSubtask);
 
@@ -129,9 +125,7 @@ public class TaskManager {
     private void updateEpicStatus(int epicId) {
         Epic epic = epics.get(epicId);
         if (epic == null || epic.getSubIds().isEmpty()) {
-            if (epic != null) {
-                epic.setStatus(Status.NEW);
-            }
+            epic.setStatus(Status.NEW);
             return;
         }
 
