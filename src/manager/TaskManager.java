@@ -1,5 +1,12 @@
+package manager;
+import enums.Status;
+import models.Task;
+import models.Epic;
+import models.Subtask;
+
 import java.util.ArrayList;
 import java.util.HashMap;
+
 
 public class TaskManager {
     private final HashMap<Integer, Task> tasks = new HashMap<>();

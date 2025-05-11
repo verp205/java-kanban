@@ -1,3 +1,6 @@
+package models;
+
+import enums.Status;
 import java.util.Objects;
 
 public class Task {
@@ -56,7 +59,7 @@ public class Task {
 
     @Override
     public String toString() {
-        return "Task{" +
+        return "models.Task{" +
                 "id=" + id +
                 ", name='" + name + '\'' +
                 ", desc='" + desc + '\'' +
@@ -65,3 +68,4 @@ public class Task {
     }
 
 }
+

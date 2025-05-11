@@ -1,3 +1,7 @@
+package models;
+
+import enums.Status;
+
 public class Subtask extends Task {
     private final int epicId;
 
@@ -12,7 +16,7 @@ public class Subtask extends Task {
 
     @Override
     public String toString() {
-        return "Subtask{" +
+        return "models.Subtask{" +
                 "id=" + getId() +
                 ", name='" + getName() + '\'' +
                 ", desc='" + getDesc() + '\'' +
