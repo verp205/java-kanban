@@ -1,40 +1,41 @@
 package models;
 
 import enums.Status;
-
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+
 
 public class Epic extends Task {
-    private final ArrayList<Integer> subIds = new ArrayList<>();
+    private final List<Integer> subIds = new ArrayList<>();
 
     public Epic(String name, String desc, int id, Status status) {
         super(name, desc, id, status);
     }
 
-    public ArrayList<Integer> getSubIds() {
-        return subIds;
-    }
-
     public void addSubtask(int subId) {
-        if (!subIds.contains(subId)) {
+        if (subId != getId() && !subIds.contains(subId)) {
             subIds.add(subId);
         }
     }
 
     public void removeSubtask(int subId) {
-        subIds.remove((Integer) subId);
+        subIds.remove(Integer.valueOf(subId));
+    }
+
+    public List<Integer> getSubIds() {
+        return Collections.unmodifiableList(subIds);
     }
 
     @Override
     public String toString() {
-        return "models.Epic{" +
+        return "Epic{" +
                 "id=" + getId() +
                 ", name='" + getName() + '\'' +
                 ", desc='" + getDesc() + '\'' +
                 ", status=" + getStatus() +
-                ", subtaskIds=" + subIds +
+                ", subIds=" + subIds +
                 '}';
     }
 
 }
-
