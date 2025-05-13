@@ -1,9 +1,11 @@
-import enums.Status;
-import models.Task;
-import models.Epic;
-import models.Subtask;
-import manager.TaskManager;
-import manager.Managers;
+package main;
+
+import main.enums.Status;
+import main.models.Task;
+import main.models.Epic;
+import main.models.Subtask;
+import main.manager.TaskManager;
+import main.manager.Managers;
 
 public class Main {
     public static void main(String[] args) {

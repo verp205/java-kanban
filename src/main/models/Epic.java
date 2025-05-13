@@ -1,6 +1,6 @@
-package models;
+package main.models;
 
-import enums.Status;
+import main.enums.Status;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;

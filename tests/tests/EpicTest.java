@@ -1,8 +1,8 @@
 package tests;
 
-import enums.Status;
-import models.Epic;
-import models.Subtask;
+import main.enums.Status;
+import main.models.Epic;
+import main.models.Subtask;
 import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
 

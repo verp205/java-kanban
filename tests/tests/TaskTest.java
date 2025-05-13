@@ -1,7 +1,7 @@
 package tests;
 
-import enums.Status;
-import models.Task;
+import main.enums.Status;
+import main.models.Task;
 import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
 

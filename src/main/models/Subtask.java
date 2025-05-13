@@ -1,6 +1,6 @@
-package models;
+package main.models;
 
-import enums.Status;
+import main.enums.Status;
 
 public class Subtask extends Task {
     private final int epicId;

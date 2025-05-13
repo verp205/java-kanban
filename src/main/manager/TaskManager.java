@@ -1,7 +1,7 @@
-package manager;
-import models.Task;
-import models.Epic;
-import models.Subtask;
+package main.manager;
+import main.models.Task;
+import main.models.Epic;
+import main.models.Subtask;
 
 import java.util.ArrayList;
 import java.util.List;

@@ -1,9 +1,9 @@
-package manager;
+package main.manager;
 
-import enums.Status;
-import models.Task;
-import models.Epic;
-import models.Subtask;
+import main.enums.Status;
+import main.models.Task;
+import main.models.Epic;
+import main.models.Subtask;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -14,8 +14,6 @@ public class InMemoryTaskManager implements TaskManager {
     private final HashMap<Integer, Epic> epics = new HashMap<>();
     private final HashMap<Integer, Subtask> subtasks = new HashMap<>();
     private int nextId = 1;
-    private final ArrayList<Task> history = new ArrayList<>(); // Для хранения истории
-    private static final int MAX_HISTORY_SIZE = 10; // Максимальный размер истории
     private final HistoryManager historyManager = Managers.getDefaultHistory();
 
 
@@ -210,11 +208,4 @@ public class InMemoryTaskManager implements TaskManager {
         return historyManager.getHistory();
     }
 
-    private void addToHistory(Task task) {
-        history.addFirst(task);
-
-        if (history.size() > MAX_HISTORY_SIZE) {
-            history.removeLast();
-        }
-    }
 }

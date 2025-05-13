@@ -1,6 +1,9 @@
-package manager;
+package main.manager;
 
-import models.Task;
+import main.models.Task;
+
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
 
@@ -12,7 +15,9 @@ public class InMemoryHistoryManager implements HistoryManager {
     public void add(Task task) {
         if (task == null) return;
 
+        history.remove(task);
         history.addFirst(task);
+
         if (history.size() > MAX_HISTORY_SIZE) {
             history.removeLast();
         }
@@ -20,6 +25,6 @@ public class InMemoryHistoryManager implements HistoryManager {
 
     @Override
     public List<Task> getHistory() {
-        return new LinkedList<>(history);
+        return Collections.unmodifiableList(new LinkedList<>(history));
     }
 }
