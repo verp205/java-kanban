@@ -38,14 +38,6 @@ class InMemoryHistoryManagerTest {
     }
 
     @Test
-    void add_shouldNotAddDuplicateTasks() {
-        Task task = new Task("Task", "Description", 1, Status.NEW);
-        historyManager.add(task);
-        historyManager.add(task);
-        assertEquals(1, historyManager.getHistory().size(), "Дубликаты не должны добавляться в историю");
-    }
-
-    @Test
     void getHistory_shouldReturnEmptyListForEmptyHistory() {
         assertTrue(historyManager.getHistory().isEmpty(), "История должна быть пустой");
     }
