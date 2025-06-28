@@ -1,5 +1,3 @@
-package tests;
-
 import main.manager.HistoryManager;
 import main.manager.Managers;
 import main.manager.TaskManager;
