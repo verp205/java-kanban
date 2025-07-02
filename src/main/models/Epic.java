@@ -24,8 +24,9 @@ public class Epic extends Task {
     }
 
     public List<Integer> getSubIds() {
-        return Collections.unmodifiableList(subIds);
+        return subIds;
     }
+
 
     @Override
     public String toString() {

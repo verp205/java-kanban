@@ -32,43 +32,50 @@ public class InMemoryHistoryManager implements HistoryManager {
     }
 
     private void removeNode(Node node) {
-        if (node == null) return;
-
         if (node.prev != null) {
             node.prev.next = node.next;
         } else {
             head = node.next;
         }
-
         if (node.next != null) {
             node.next.prev = node.prev;
         } else {
             tail = node.prev;
         }
-
         nodeMap.remove(node.task.getId());
     }
+
+
 
     @Override
     public void add(Task task) {
         if (task == null) return;
 
-        remove(task.getId()); // удаление старой версии
-        linkLast(task);       // добавление в конец
+        Node existingNode = nodeMap.get(task.getId());
+        if (existingNode != null) {
+            removeNode(existingNode);
+        }
+        linkLast(task);
     }
 
 
     @Override
     public void remove(int id) {
-        removeNode(nodeMap.get(id));
+        Node node = nodeMap.get(id);
+        if (node != null) {
+            removeNode(node);
+        }
     }
+
+
+
 
     @Override
     public List<Task> getHistory() {
         List<Task> tasks = new ArrayList<>();
         Node current = head;
         while (current != null) {
-            tasks.add(current.task); // ← добавление в конец списка
+            tasks.add(current.task); // добавление в конец списка
             current = current.next;
         }
         return tasks;
