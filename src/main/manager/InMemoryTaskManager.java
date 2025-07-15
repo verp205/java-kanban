@@ -118,8 +118,6 @@ public class InMemoryTaskManager implements TaskManager {
         }
     }
 
-
-
     @Override
     public Subtask createSubtask(Subtask subtask) {
         if (subtask.getId() == subtask.getEpicId()) {
