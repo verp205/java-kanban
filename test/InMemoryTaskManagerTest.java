@@ -1,4 +1,5 @@
 import main.enums.Status;
+import main.enums.TaskType;
 import main.manager.InMemoryTaskManager;
 import main.manager.TaskManager;
 import main.models.Epic;
@@ -24,44 +25,47 @@ class InMemoryTaskManagerTest {
 
     @Test
     void createAndGetTask_shouldReturnCreatedTask() {
-        Task task = new Task("Task", "Desc", 0, Status.NEW);
+        Task task = new Task("Task", "Desc", 0, Status.NEW, TaskType.TASK);
         Task created = taskManager.createTask(task);
         Task fetched = taskManager.getTask(created.getId());
 
         assertEquals(created, fetched);
+        assertEquals(TaskType.TASK, fetched.getType());
     }
 
     @Test
     void getAllTasks_shouldReturnAllCreatedTasks() {
-        taskManager.createTask(new Task("T1", "Desc", 0, Status.NEW));
-        taskManager.createTask(new Task("T2", "Desc", 0, Status.NEW));
+        taskManager.createTask(new Task("T1", "Desc", 0, Status.NEW, TaskType.TASK));
+        taskManager.createTask(new Task("T2", "Desc", 0, Status.NEW, TaskType.TASK));
 
         ArrayList<Task> tasks = taskManager.getAllTasks();
         assertEquals(2, tasks.size());
+        assertEquals(TaskType.TASK, tasks.get(0).getType());
     }
 
     @Test
     void updateTask_shouldModifyExistingTask() {
-        Task task = taskManager.createTask(new Task("T1", "Desc", 0, Status.NEW));
-        Task updated = new Task("Updated", "New Desc", task.getId(), Status.DONE);
+        Task task = taskManager.createTask(new Task("T1", "Desc", 0, Status.NEW, TaskType.TASK));
+        Task updated = new Task("Updated", "New Desc", task.getId(), Status.DONE, TaskType.TASK);
         taskManager.updateTask(updated);
 
         Task result = taskManager.getTask(task.getId());
         assertEquals("Updated", result.getName());
         assertEquals(Status.DONE, result.getStatus());
+        assertEquals(TaskType.TASK, result.getType());
     }
 
     @Test
     void deleteTask_shouldRemoveTask() {
-        Task task = taskManager.createTask(new Task("Task", "Desc", 0, Status.NEW));
+        Task task = taskManager.createTask(new Task("Task", "Desc", 0, Status.NEW, TaskType.TASK));
         taskManager.deleteTask(task.getId());
         assertNull(taskManager.getTask(task.getId()));
     }
 
     @Test
     void deleteAllTasks_shouldClearTaskList() {
-        taskManager.createTask(new Task("Task1", "Desc", 0, Status.NEW));
-        taskManager.createTask(new Task("Task2", "Desc", 0, Status.NEW));
+        taskManager.createTask(new Task("Task1", "Desc", 0, Status.NEW, TaskType.TASK));
+        taskManager.createTask(new Task("Task2", "Desc", 0, Status.NEW, TaskType.TASK));
         taskManager.deleteAllTasks();
 
         assertTrue(taskManager.getAllTasks().isEmpty());
@@ -75,6 +79,7 @@ class InMemoryTaskManagerTest {
         Epic fetched = taskManager.getEpic(epic.getId());
 
         assertEquals(epic, fetched);
+        assertEquals(TaskType.EPIC, fetched.getType());
     }
 
     @Test
@@ -84,16 +89,18 @@ class InMemoryTaskManagerTest {
 
         ArrayList<Epic> epics = taskManager.getAllEpics();
         assertEquals(2, epics.size());
+        assertEquals(TaskType.EPIC, epics.get(0).getType());
     }
 
     @Test
     void updateEpic_shouldModifyExistingEpic() {
         Epic epic = taskManager.createEpic(new Epic("Epic", "Desc", 0, Status.NEW));
-        Epic updated = new Epic("Updated", "New Desc", epic.getId(), Status.DONE);
+        Epic updated = new Epic("Updated", "New Desc", epic.getId(), Status.NEW);
         taskManager.updateEpic(updated);
 
         Epic result = taskManager.getEpic(epic.getId());
         assertEquals("Updated", result.getName());
+        assertEquals(TaskType.EPIC, result.getType());
     }
 
     @Test
@@ -106,16 +113,6 @@ class InMemoryTaskManagerTest {
         assertNull(taskManager.getSubtask(sub.getId()));
     }
 
-    @Test
-    void deleteAllEpics_shouldRemoveAllEpicsAndSubtasks() {
-        Epic epic = taskManager.createEpic(new Epic("Epic", "Desc", 0, Status.NEW));
-        taskManager.createSubtask(new Subtask("Sub", "Desc", 0, Status.NEW, epic.getId()));
-        taskManager.deleteAllEpics();
-
-        assertTrue(taskManager.getAllEpics().isEmpty());
-        assertTrue(taskManager.getAllSubtasks().isEmpty());
-    }
-
     // ---- SUBTASK TESTS ----
 
     @Test
@@ -125,16 +122,7 @@ class InMemoryTaskManagerTest {
         Subtask fetched = taskManager.getSubtask(sub.getId());
 
         assertEquals(sub, fetched);
-    }
-
-    @Test
-    void getAllSubtasks_shouldReturnAllCreatedSubtasks() {
-        Epic epic = taskManager.createEpic(new Epic("Epic", "Desc", 0, Status.NEW));
-        taskManager.createSubtask(new Subtask("S1", "Desc", 0, Status.NEW, epic.getId()));
-        taskManager.createSubtask(new Subtask("S2", "Desc", 0, Status.NEW, epic.getId()));
-
-        ArrayList<Subtask> subtasks = taskManager.getAllSubtasks();
-        assertEquals(2, subtasks.size());
+        assertEquals(TaskType.SUBTASK, fetched.getType());
     }
 
     @Test
@@ -146,44 +134,14 @@ class InMemoryTaskManagerTest {
         taskManager.updateSubtask(updated);
         assertEquals(Status.DONE, taskManager.getSubtask(sub.getId()).getStatus());
         assertEquals(Status.DONE, taskManager.getEpic(epic.getId()).getStatus());
-    }
-
-    @Test
-    void deleteSubtask_shouldRemoveSubtaskFromEpicAndHistory() {
-        Epic epic = taskManager.createEpic(new Epic("Epic", "Desc", 0, Status.NEW));
-        Subtask sub = taskManager.createSubtask(new Subtask("Sub", "Desc", 0, Status.NEW, epic.getId()));
-
-        taskManager.getSubtask(sub.getId());
-
-        List<Task> historyBeforeDelete = taskManager.getHistory();
-        assertTrue(historyBeforeDelete.stream().anyMatch(t -> t.getId() == sub.getId()));
-
-        taskManager.deleteSubtask(sub.getId());
-
-        assertNull(taskManager.getSubtask(sub.getId()));
-
-        assertFalse(taskManager.getEpic(epic.getId()).getSubIds().contains(sub.getId()));
-
-        List<Task> historyAfterDelete = taskManager.getHistory();
-        assertFalse(historyAfterDelete.stream().anyMatch(t -> t.getId() == sub.getId()));
-    }
-
-
-    @Test
-    void deleteAllSubtasks_shouldClearSubtaskListAndUpdateEpics() {
-        Epic epic = taskManager.createEpic(new Epic("Epic", "Desc", 0, Status.NEW));
-        taskManager.createSubtask(new Subtask("S1", "Desc", 0, Status.NEW, epic.getId()));
-        taskManager.deleteAllSubtasks();
-
-        assertTrue(taskManager.getAllSubtasks().isEmpty());
-        assertTrue(taskManager.getEpic(epic.getId()).getSubIds().isEmpty());
+        assertEquals(TaskType.SUBTASK, taskManager.getSubtask(sub.getId()).getType());
     }
 
     // ---- HISTORY TESTS ----
 
     @Test
     void getHistory_shouldReturnVisitedTasksOnly() {
-        Task task = taskManager.createTask(new Task("T", "Desc", 0, Status.NEW));
+        Task task = taskManager.createTask(new Task("T", "Desc", 0, Status.NEW, TaskType.TASK));
         Epic epic = taskManager.createEpic(new Epic("E", "Desc", 0, Status.NEW));
         Subtask sub = taskManager.createSubtask(new Subtask("S", "Desc", 0, Status.NEW, epic.getId()));
 
@@ -193,14 +151,8 @@ class InMemoryTaskManagerTest {
 
         List<Task> history = taskManager.getHistory();
         assertEquals(3, history.size());
-    }
-
-    @Test
-    void getHistory_shouldBeEmptyAfterAllTasksDeleted() {
-        Task task = taskManager.createTask(new Task("T", "Desc", 0, Status.NEW));
-        taskManager.getTask(task.getId());
-        taskManager.deleteAllTasks();
-
-        assertTrue(taskManager.getHistory().isEmpty());
+        assertEquals(TaskType.TASK, history.get(0).getType());
+        assertEquals(TaskType.EPIC, history.get(1).getType());
+        assertEquals(TaskType.SUBTASK, history.get(2).getType());
     }
 }

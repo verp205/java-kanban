@@ -1,6 +1,7 @@
 package main.models;
 
 import main.enums.Status;
+import main.enums.TaskType;
 import java.util.Objects;
 
 public class Task {
@@ -8,12 +9,14 @@ public class Task {
     private String desc;
     private int id;
     private Status status;
+    private TaskType type;
 
-    public Task(String name, String desc, int id, Status status) {
+    public Task(String name, String desc, int id, Status status, TaskType type) {
         this.name = name;
         this.desc = desc;
         this.id = id;
         this.status = status;
+        this.type = type;
     }
 
     public String getName() {
@@ -44,6 +47,15 @@ public class Task {
         this.status = status;
     }
 
+    public TaskType getType() {
+        return type;
+    }
+
+    public String toCsvString() {
+        return String.format("%d,%s,%s,%s,%s",
+                id, type, name, status, desc);
+    }
+
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
@@ -60,8 +72,9 @@ public class Task {
 
     @Override
     public String toString() {
-        return "main.enums.models.Task{" +
+        return "Task{" +
                 "id=" + id +
+                ", type=" + type +
                 ", name='" + name + '\'' +
                 ", desc='" + desc + '\'' +
                 ", status=" + status +

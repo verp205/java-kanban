@@ -1,6 +1,8 @@
 package main.models;
 
 import main.enums.Status;
+import main.enums.TaskType;
+
 import java.util.ArrayList;
 import java.util.List;
 
@@ -9,7 +11,12 @@ public class Epic extends Task {
     private final List<Integer> subIds = new ArrayList<>();
 
     public Epic(String name, String desc, int id, Status status) {
-        super(name, desc, id, status);
+        super(name, desc, id, status, TaskType.EPIC);
+    }
+
+    @Override
+    public String toCsvString() {
+        return super.toCsvString() + ",";
     }
 
     public void addSubtask(int subId) {

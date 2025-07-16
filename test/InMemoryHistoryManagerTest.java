@@ -1,4 +1,5 @@
 import main.enums.Status;
+import main.enums.TaskType;
 import main.manager.HistoryManager;
 import main.manager.InMemoryHistoryManager;
 import main.models.Task;
@@ -18,9 +19,9 @@ class InMemoryHistoryManagerTest {
     @BeforeEach
     void setUp() {
         historyManager = new InMemoryHistoryManager();
-        task1 = new Task("Task 1", "Desc", 1, Status.NEW);
-        task2 = new Task("Task 2", "Desc", 2, Status.NEW);
-        task3 = new Task("Task 3", "Desc", 3, Status.NEW);
+        task1 = new Task("Task 1", "Desc", 1, Status.NEW, TaskType.TASK);
+        task2 = new Task("Task 2", "Desc", 2, Status.NEW, TaskType.TASK);
+        task3 = new Task("Task 3", "Desc", 3, Status.NEW, TaskType.TASK);
 
         historyManager.add(task1);
         historyManager.add(task2);
@@ -30,7 +31,7 @@ class InMemoryHistoryManagerTest {
     @Test
     void add_shouldAddNewTaskToHistory() {
         HistoryManager manager = new InMemoryHistoryManager(); // отдельный экземпляр
-        Task task = new Task("Task 1", "Description", 1, Status.NEW);
+        Task task = new Task("Task 1", "Description", 1, Status.NEW, TaskType.TASK);
         manager.add(task);
 
         List<Task> history = manager.getHistory();

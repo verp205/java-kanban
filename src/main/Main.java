@@ -1,6 +1,7 @@
 package main;
 
 import main.enums.Status;
+import main.enums.TaskType;
 import main.models.Task;
 import main.models.Epic;
 import main.models.Subtask;
@@ -12,7 +13,7 @@ public class Main {
         TaskManager manager = Managers.getDefault();
 
         // Создаем тестовые данные
-        Task task1 = new Task("Задача 1", "Описание задачи 1", 1, Status.NEW);
+        Task task1 = new Task("Задача 1", "Описание задачи 1", 1, Status.NEW, TaskType.TASK);
         manager.createTask(task1);
 
         Epic epic1 = new Epic("Эпик 1", "Описание эпика 1", 2, Status.NEW);

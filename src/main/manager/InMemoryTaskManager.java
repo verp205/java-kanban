@@ -1,6 +1,7 @@
 package main.manager;
 
 import main.enums.Status;
+import main.enums.TaskType;
 import main.models.Task;
 import main.models.Epic;
 import main.models.Subtask;
@@ -10,10 +11,10 @@ import java.util.HashMap;
 import java.util.List;
 
 public class InMemoryTaskManager implements TaskManager {
-    private final HashMap<Integer, Task> tasks = new HashMap<>();
-    private final HashMap<Integer, Epic> epics = new HashMap<>();
-    private final HashMap<Integer, Subtask> subtasks = new HashMap<>();
-    private int nextId = 1;
+    final HashMap<Integer, Task> tasks = new HashMap<>();
+    final HashMap<Integer, Epic> epics = new HashMap<>();
+    final HashMap<Integer, Subtask> subtasks = new HashMap<>();
+    int nextId = 1;
     private final HistoryManager historyManager = Managers.getDefaultHistory();
 
 
@@ -33,7 +34,14 @@ public class InMemoryTaskManager implements TaskManager {
 
     @Override
     public Task createTask(Task task) {
-        Task newTask = new Task(task.getName(), task.getDesc(), nextId++, task.getStatus());
+        Task newTask = new Task(
+                task.getName(),
+                task.getDesc(),
+                nextId++,
+                task.getStatus() != null ? task.getStatus() : Status.NEW,
+                TaskType.TASK
+        );
+
         tasks.put(newTask.getId(), newTask);
         return newTask;
     }
@@ -166,7 +174,7 @@ public class InMemoryTaskManager implements TaskManager {
 
 
 
-    private void updateEpicStatus(int epicId) {
+    void updateEpicStatus(int epicId) {
         Epic epic = epics.get(epicId);
         if (epic == null || epic.getSubIds().isEmpty()) {
             epic.setStatus(Status.NEW);
