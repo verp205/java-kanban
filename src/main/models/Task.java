@@ -1,59 +1,101 @@
 package main.models;
 
+import main.enums.Priority;
 import main.enums.Status;
 import main.enums.TaskType;
+
+import java.time.Duration;
+import java.time.LocalDateTime;
 import java.util.Objects;
 
 public class Task {
-    private String name;
-    private String desc;
-    private int id;
-    private Status status;
-    private TaskType type;
+    protected int id;
+    protected String name;
+    protected String description;
+    protected Status status;
+    protected TaskType type;
+    protected LocalDateTime startTime;
+    protected Duration duration;
+    protected LocalDateTime endTime;
+    protected Priority priority;
 
-    public Task(String name, String desc, int id, Status status, TaskType type) {
+    public Task(String name, String description, int id, Status status, TaskType type,
+                LocalDateTime startTime, Duration duration) {
         this.name = name;
-        this.desc = desc;
+        this.description = description;
         this.id = id;
         this.status = status;
         this.type = type;
+        this.startTime = startTime;
+        this.duration = duration == null ? Duration.ZERO : duration;
+        if (startTime != null) {
+            this.endTime = startTime.plus(this.duration);
+        }
+        this.priority = null;
     }
 
-    public String getName() {
-        return name;
-    }
+    // Геттеры и сеттеры
 
-    public String getDesc() {
-        return desc;
+    public String getDescription() {
+        return description;
     }
 
     public int getId() {
         return id;
     }
 
+    public void setId(int id) {
+        this.id = id;
+    }
+
+    public LocalDateTime getStartTime() {
+        return startTime;
+    }
+
+    public Duration getDuration() {
+        return duration;
+    }
+
+    public LocalDateTime getEndTime() {
+        return endTime;
+    }
+
     public Status getStatus() {
         return status;
     }
 
-    public void setName(String name) {
-        this.name = name;
+    public String getName() {
+        return name;
     }
 
-    public void setDesc(String desc) {
-        this.desc = desc;
+    public void setStartTime(LocalDateTime startTime) {
+        this.startTime = startTime;
+        if (startTime != null && duration != null) {
+            this.endTime = startTime.plus(duration);
+        } else {
+            this.endTime = null;
+        }
     }
 
-    public void setStatus(Status status) {
-        this.status = status;
+    public void setDuration(Duration duration) {
+        this.duration = duration;
+        if (startTime != null && duration != null) {
+            this.endTime = startTime.plus(duration);
+        } else {
+            this.endTime = null;
+        }
     }
 
-    public TaskType getType() {
-        return type;
+    public void setEndTime(LocalDateTime endTime) {
+        this.endTime = endTime;
     }
 
-    public String toCsvString() {
-        return String.format("%d,%s,%s,%s,%s",
-                id, type, name, status, desc);
+    public Priority getPriority() {
+        return priority;
+    }
+
+    public void setPriority(Priority priority) {
+        this.priority = priority;
     }
 
     @Override
@@ -66,20 +108,24 @@ public class Task {
 
     @Override
     public int hashCode() {
-        return Objects.hash(id);
+        return Integer.hashCode(id);
     }
 
-
-    @Override
-    public String toString() {
-        return "Task{" +
-                "id=" + id +
-                ", type=" + type +
-                ", name='" + name + '\'' +
-                ", desc='" + desc + '\'' +
-                ", status=" + status +
-                '}';
+    public String toCsvString() {
+        return String.format("%d,%s,%s,%s,%s,%s,%s,%s,%s,",
+                id,
+                type.name(),
+                name,
+                status.name(),
+                description,
+                startTime == null ? "" : startTime.toString(),
+                duration == null ? "" : duration.toString(),
+                endTime == null ? "" : endTime.toString(),
+                priority == null ? "" : priority.name()
+        );
     }
 
+    public TaskType getType() {
+        return type;
+    }
 }
-

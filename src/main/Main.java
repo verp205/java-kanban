@@ -8,21 +8,32 @@ import main.models.Subtask;
 import main.manager.TaskManager;
 import main.manager.Managers;
 
+import java.time.Duration;
+import java.time.LocalDateTime;
+
 public class Main {
     public static void main(String[] args) {
         TaskManager manager = Managers.getDefault();
 
         // Создаем тестовые данные
-        Task task1 = new Task("Задача 1", "Описание задачи 1", 1, Status.NEW, TaskType.TASK);
+        Task task1 = new Task( "Задача 1",
+                "Описание задачи 1",
+                1,
+                Status.NEW,
+                TaskType.TASK,
+                LocalDateTime.now(),
+                Duration.ofHours(1));
         manager.createTask(task1);
 
         Epic epic1 = new Epic("Эпик 1", "Описание эпика 1", 2, Status.NEW);
         manager.createEpic(epic1);
 
-        Subtask subtask1 = new Subtask("Подзадача 1", "Описание подзадачи 1", 3, Status.NEW, epic1.getId());
+        Subtask subtask1 = new Subtask("Подзадача 1", "Описание подзадачи 1", 3, Status.NEW, epic1.getId(), LocalDateTime.of(2025, 7, 1, 11, 0),
+                Duration.ofMinutes(45));
         manager.createSubtask(subtask1);
 
-        Subtask subtask2 = new Subtask("Подзадача 2", "Описание подзадачи 2", 4, Status.IN_PROGRESS, epic1.getId());
+        Subtask subtask2 = new Subtask("Подзадача 2", "Описание подзадачи 2", 4, Status.IN_PROGRESS, epic1.getId(), LocalDateTime.of(2025, 7, 1, 11, 0),
+                Duration.ofMinutes(45));
         manager.createSubtask(subtask2);
 
         // Просматриваем задачи, чтобы заполнить историю

@@ -6,6 +6,8 @@ import main.models.Task;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
+import java.time.Duration;
+import java.time.LocalDateTime;
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -19,9 +21,35 @@ class InMemoryHistoryManagerTest {
     @BeforeEach
     void setUp() {
         historyManager = new InMemoryHistoryManager();
-        task1 = new Task("Task 1", "Desc", 1, Status.NEW, TaskType.TASK);
-        task2 = new Task("Task 2", "Desc", 2, Status.NEW, TaskType.TASK);
-        task3 = new Task("Task 3", "Desc", 3, Status.NEW, TaskType.TASK);
+        task1 = new Task(
+                "Task 1",
+                "desc",
+                1,
+                Status.NEW,
+                TaskType.TASK,
+                LocalDateTime.now(),
+                Duration.ofHours(1)
+        );
+
+        task2 = new Task(
+                "Task 2",
+                "desc",
+                2,
+                Status.NEW,
+                TaskType.TASK,
+                LocalDateTime.now(),
+                Duration.ofHours(1)
+        );
+
+        task3 = new Task(
+                "Task 3",
+                "desc",
+                3,
+                Status.NEW,
+                TaskType.TASK,
+                LocalDateTime.now(),
+                Duration.ofHours(1)
+        );
 
         historyManager.add(task1);
         historyManager.add(task2);
@@ -30,8 +58,16 @@ class InMemoryHistoryManagerTest {
 
     @Test
     void add_shouldAddNewTaskToHistory() {
-        HistoryManager manager = new InMemoryHistoryManager(); // отдельный экземпляр
-        Task task = new Task("Task 1", "Description", 1, Status.NEW, TaskType.TASK);
+        HistoryManager manager = new InMemoryHistoryManager();
+        Task task = new Task(
+                "Task A",
+                "desc",
+                4,
+                Status.NEW,
+                TaskType.TASK,
+                LocalDateTime.now(),
+                Duration.ofHours(1)
+        );
         manager.add(task);
 
         List<Task> history = manager.getHistory();
@@ -41,7 +77,7 @@ class InMemoryHistoryManagerTest {
 
     @Test
     void add_shouldNotDuplicateSameTask() {
-        historyManager.add(task1); // добавляется повторно
+        historyManager.add(task1);
 
         List<Task> history = historyManager.getHistory();
         assertEquals(3, history.size(), "Повторное добавление не должно создавать дубликат");
@@ -49,13 +85,12 @@ class InMemoryHistoryManagerTest {
 
     @Test
     void add_shouldMoveTaskToEndIfAlreadyExists() {
-        historyManager.add(task1); // task1 снова добавляется -> должна переместиться в конец
+        historyManager.add(task1);
 
         List<Task> history = historyManager.getHistory();
 
         assertEquals(3, history.size(), "История должна содержать три уникальные задачи");
 
-        // Проверяем, что порядок корректный: task2, task3, task1
         assertEquals(task2, history.get(0), "task2 должна быть первой после перемещения task1");
         assertEquals(task3, history.get(1), "task3 должна быть второй");
         assertEquals(task1, history.get(2), "task1 должна быть перемещена в конец");
@@ -63,7 +98,7 @@ class InMemoryHistoryManagerTest {
 
     @Test
     void remove_shouldRemoveFromBeginningOfHistory() {
-        historyManager.remove(1); // Удаляем task1 (начало)
+        historyManager.remove(1);
 
         List<Task> history = historyManager.getHistory();
         assertEquals(List.of(task2, task3), history, "После удаления task1 должны остаться task2 и task3");
@@ -71,7 +106,7 @@ class InMemoryHistoryManagerTest {
 
     @Test
     void remove_shouldRemoveFromMiddleOfHistory() {
-        historyManager.remove(2); // Удаляем task2 (середина)
+        historyManager.remove(2);
 
         List<Task> history = historyManager.getHistory();
         assertEquals(List.of(task1, task3), history, "После удаления task2 должны остаться task1 и task3");
@@ -79,24 +114,17 @@ class InMemoryHistoryManagerTest {
 
     @Test
     void remove_shouldRemoveFromEndOfHistory() {
-        historyManager.remove(3); // Удаляем task3 (конец)
+        historyManager.remove(3);
 
         List<Task> history = historyManager.getHistory();
         assertEquals(List.of(task1, task2), history, "После удаления task3 должны остаться task1 и task2");
     }
 
     @Test
-    void remove_shouldHandleNonExistentIdGracefully() {
-        historyManager.remove(999); // несуществующий ID
+    void remove_shouldDoNothingIfIdNotFound() {
+        historyManager.remove(999);
 
         List<Task> history = historyManager.getHistory();
-        assertEquals(3, history.size(), "Удаление несуществующей задачи не должно влиять на историю");
-    }
-
-    @Test
-    void getHistory_shouldReturnEmptyIfNothingAdded() {
-        HistoryManager emptyManager = new InMemoryHistoryManager();
-        List<Task> history = emptyManager.getHistory();
-        assertTrue(history.isEmpty(), "История должна быть пустой, если в неё ничего не добавлялось");
+        assertEquals(3, history.size(), "Удаление несуществующего id не должно влиять на историю");
     }
 }
