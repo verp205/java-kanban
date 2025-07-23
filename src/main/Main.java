@@ -16,7 +16,7 @@ public class Main {
         TaskManager manager = Managers.getDefault();
 
         // Создаем тестовые данные
-        Task task1 = new Task( "Задача 1",
+        Task task1 = new Task("Задача 1",
                 "Описание задачи 1",
                 1,
                 Status.NEW,
