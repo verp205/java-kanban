@@ -6,7 +6,6 @@ import main.enums.TaskType;
 
 import java.time.Duration;
 import java.time.LocalDateTime;
-import java.util.Objects;
 
 public class Task {
     protected int id;
@@ -33,8 +32,6 @@ public class Task {
         }
         this.priority = null;
     }
-
-    // Геттеры и сеттеры
 
     public String getDescription() {
         return description;

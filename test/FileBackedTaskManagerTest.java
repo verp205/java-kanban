@@ -299,5 +299,4 @@ class FileBackedTaskManagerTest {
             assertNotNull(loadedManager);
         });
     }
-
 }

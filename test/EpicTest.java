@@ -1,5 +1,4 @@
 import main.enums.Status;
-import main.enums.TaskType;
 import main.models.Epic;
 import main.models.Subtask;
 import main.manager.FileBackedTaskManager;
@@ -47,5 +46,4 @@ class EpicTest {
 
         assertTrue(exception.getMessage().contains("id"), "Должна быть ошибка из-за совпадения id");
     }
-
 }

@@ -150,8 +150,6 @@ public class InMemoryTaskManager implements TaskManager {
                 .collect(Collectors.toList());
     }
 
-    // Методы TaskManager для получения и удаления всех задач
-
     @Override
     public ArrayList<Task> getAllTasks() {
         return new ArrayList<>(tasks.values());

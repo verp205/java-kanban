@@ -1,6 +1,5 @@
 package main.models;
 
-import main.enums.Priority;
 import main.enums.Status;
 import main.enums.TaskType;
 
@@ -10,11 +9,6 @@ import java.util.Objects;
 
 public class Subtask extends Task {
     private final int epicId;
-
-    public Subtask(String name, String desc, Status status, int epicId, LocalDateTime startTime, Duration duration) {
-        super(name, desc, 0, status, TaskType.SUBTASK, startTime, duration);
-        this.epicId = epicId;
-    }
 
     public Subtask(String name, String desc, int id, Status status, int epicId, LocalDateTime startTime, Duration duration) {
         super(name, desc, id, status, TaskType.SUBTASK, startTime, duration);
