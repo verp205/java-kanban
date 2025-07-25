@@ -13,6 +13,8 @@ public interface TaskManager {
 
     void deleteAllTasks();
 
+    void add(Task task);
+
     Task createTask(Task task);
 
     void updateTask(Task task);
@@ -46,4 +48,6 @@ public interface TaskManager {
     List<Task> getHistory();
 
     List<Task> getPrioritizedTasks();
+
+    void remove(int id);
 }

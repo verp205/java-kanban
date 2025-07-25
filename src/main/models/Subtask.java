@@ -1,7 +1,6 @@
 package main.models;
 
 import main.enums.Status;
-import main.enums.TaskType;
 
 import java.time.Duration;
 import java.time.LocalDateTime;
@@ -10,8 +9,9 @@ import java.util.Objects;
 public class Subtask extends Task {
     private final int epicId;
 
-    public Subtask(String name, String desc, int id, Status status, int epicId, LocalDateTime startTime, Duration duration) {
-        super(name, desc, id, status, TaskType.SUBTASK, startTime, duration);
+    public Subtask(String name, String description, int id, Status status,
+                   int epicId, LocalDateTime startTime, Duration duration) {
+        super(name, description, id, status, startTime, duration);
         this.epicId = epicId;
     }
 
@@ -19,6 +19,12 @@ public class Subtask extends Task {
         return epicId;
     }
 
+    @Override
+    public String getTaskType() {
+        return "SUBTASK";
+    }
+
+    @Override
     public Status getStatus() {
         return status;
     }
@@ -30,8 +36,8 @@ public class Subtask extends Task {
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
-        if (!(o instanceof Subtask)) return false;
-        if (!super.equals(o)) return false;  // сравним базовые поля Task
+        if (o == null || getClass() != o.getClass()) return false;
+        if (!super.equals(o)) return false;
         Subtask subtask = (Subtask) o;
         return epicId == subtask.epicId;
     }
@@ -39,21 +45,5 @@ public class Subtask extends Task {
     @Override
     public int hashCode() {
         return Objects.hash(super.hashCode(), epicId);
-    }
-
-    @Override
-    public String toCsvString() {
-        return String.format("%d,%s,%s,%s,%s,%s,%s,%s,%s,%d",
-                id,
-                type.name(),
-                name,
-                status.name(),
-                description,
-                startTime == null ? "" : startTime.toString(),
-                duration == null ? "" : duration.toString(),
-                endTime == null ? "" : endTime.toString(),
-                priority == null ? "" : priority.name(),
-                epicId
-        );
     }
 }

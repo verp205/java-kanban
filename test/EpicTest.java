@@ -6,6 +6,8 @@ import org.junit.jupiter.api.Test;
 
 import java.io.File;
 import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.time.Duration;
 import java.time.LocalDateTime;
 
@@ -22,28 +24,45 @@ class EpicTest {
     }
 
     @Test
-    void cannotAddEpicToItselfAsSubtask() throws IOException {
-        File tempFile = File.createTempFile("testTasks", ".txt");
-        tempFile.deleteOnExit();
+    void epicCannotBeItsOwnSubtask() throws IOException {
+        // Создаем временный файл для менеджера задач
+        Path tempFile = Files.createTempFile("test", ".csv");
+        tempFile.toFile().deleteOnExit();
 
-        FileBackedTaskManager manager = new FileBackedTaskManager(tempFile);
-        Epic epic = new Epic("Epic", "Desc", 1, Status.NEW);
+        // Создаем менеджер и эпик
+        FileBackedTaskManager manager = new FileBackedTaskManager(tempFile.toFile());
+        Epic epic = new Epic("Test Epic", "Description", 1, Status.NEW);
         manager.createEpic(epic);
 
-        Subtask subtask = new Subtask(
-                "Epic",
-                "Desc",
-                epic.getId(),
+        // Пытаемся создать подзадачу с ID эпика
+        Subtask invalidSubtask = new Subtask(
+                "Invalid Subtask",
+                "Should not be allowed",
+                epic.getId(), // Используем ID эпика!
                 Status.NEW,
                 epic.getId(),
                 LocalDateTime.now(),
                 Duration.ofHours(1)
         );
 
-        Exception exception = assertThrows(IllegalArgumentException.class, () -> {
-            manager.createSubtask(subtask);
-        });
+        // Проверяем, что попытка добавления вызывает исключение
+        IllegalArgumentException exception = assertThrows(
+                IllegalArgumentException.class,
+                () -> manager.createSubtask(invalidSubtask),
+                "Должно быть выброшено исключение при попытке сделать эпик подзадачей самого себя"
+        );
 
-        assertTrue(exception.getMessage().contains("id"), "Должна быть ошибка из-за совпадения id");
+        // Проверяем сообщение об ошибке
+        assertTrue(
+                exception.getMessage().contains("не может быть подзадачей самого себя") ||
+                        exception.getMessage().contains("cannot be subtask of itself"),
+                "Сообщение об ошибке должно указывать на проблему"
+        );
+
+        // Дополнительно проверяем, что подзадача не была добавлена
+        assertTrue(
+                manager.getSubtasks().stream().noneMatch(s -> s.getId() == epic.getId()),
+                "Подзадача с ID эпика не должна быть в списке"
+        );
     }
 }
