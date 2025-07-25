@@ -2,7 +2,6 @@ package main.models;
 
 import main.enums.Priority;
 import main.enums.Status;
-import main.enums.TaskType;
 
 import java.time.Duration;
 import java.time.LocalDateTime;
@@ -29,14 +28,33 @@ public class Task {
     }
 
     // Геттеры
-    public int getId() { return id; }
-    public String getName() { return name; }
-    public String getDescription() { return description; }
-    public Status getStatus() { return status; }
-    public LocalDateTime getStartTime() { return startTime; }
-    public Duration getDuration() { return duration; }
-    public Priority getPriority() { return priority; }
+    public int getId() {
+        return id;
+    }
 
+    public String getName() {
+        return name;
+    }
+
+    public String getDescription() {
+        return description;
+    }
+
+    public Status getStatus() {
+        return status;
+    }
+
+    public LocalDateTime getStartTime() {
+        return startTime;
+    }
+
+    public Duration getDuration() {
+        return duration;
+    }
+
+    public Priority getPriority() {
+        return priority;
+    }
 
     // Вычисляемый endTime
     public LocalDateTime getEndTime() {
@@ -44,8 +62,13 @@ public class Task {
     }
 
     // Сеттеры
-    public void setId(int id) { this.id = id; }
-    public void setStatus(Status status) { this.status = status; }
+    public void setId(int id) {
+        this.id = id;
+    }
+
+    public void setStatus(Status status) {
+        this.status = status;
+    }
 
     public void setStartTime(LocalDateTime startTime) {
         this.startTime = startTime;
