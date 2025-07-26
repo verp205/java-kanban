@@ -2,6 +2,7 @@ package main.manager;
 
 import main.enums.Priority;
 import main.enums.Status;
+import main.enums.TaskType;
 import main.models.*;
 import java.io.*;
 import java.time.Duration;
@@ -33,10 +34,6 @@ public class FileBackedTaskManager extends InMemoryTaskManager {
 
     @Override
     public Subtask createSubtask(Subtask subtask) {
-        if (subtask.getId() == subtask.getEpicId()) {
-            throw new IllegalArgumentException("Эпик не может быть подзадачей самого себя");
-        }
-
         Subtask created = super.createSubtask(subtask);
         save();
         return created;
@@ -60,8 +57,12 @@ public class FileBackedTaskManager extends InMemoryTaskManager {
 
     @Override
     public void updateSubtask(Subtask subtask) {
-        super.updateSubtask(subtask);
-        save();
+        try {
+            super.updateSubtask(subtask);
+            save();
+        } catch (IllegalArgumentException e) {
+            throw e;
+        }
     }
 
     @Override
@@ -201,13 +202,13 @@ public class FileBackedTaskManager extends InMemoryTaskManager {
 
     private void restoreTask(Task task) {
         switch (task.getTaskType()) {
-            case "TASK":
+            case TaskType.TASK:
                 tasks.put(task.getId(), task);
                 break;
-            case "EPIC":
+            case TaskType.EPIC:
                 epics.put(task.getId(), (Epic) task);
                 break;
-            case "SUBTASK":
+            case TaskType.SUBTASK:
                 subtasks.put(task.getId(), (Subtask) task);
                 break;
             default:

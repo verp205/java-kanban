@@ -2,6 +2,7 @@ package main.models;
 
 import main.enums.Priority;
 import main.enums.Status;
+import main.enums.TaskType;
 
 import java.time.Duration;
 import java.time.LocalDateTime;
@@ -82,8 +83,8 @@ public class Task {
         this.priority = priority;
     }
 
-    public String getTaskType() {
-        return "TASK";
+    public TaskType getTaskType() {
+        return TaskType.TASK;
     }
 
     public void setName(String name) {

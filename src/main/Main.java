@@ -22,11 +22,6 @@ public class Main {
                 Status.NEW,
                 LocalDateTime.now(),
                 Duration.ofMinutes(15)) {
-
-            @Override
-            public String getTaskType() {
-                return "TASK";
-            }
         };
         manager.createTask(task1);
 

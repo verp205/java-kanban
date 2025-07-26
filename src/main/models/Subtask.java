@@ -1,6 +1,7 @@
 package main.models;
 
 import main.enums.Status;
+import main.enums.TaskType;
 
 import java.time.Duration;
 import java.time.LocalDateTime;
@@ -20,8 +21,8 @@ public class Subtask extends Task {
     }
 
     @Override
-    public String getTaskType() {
-        return "SUBTASK";
+    public TaskType getTaskType() {
+        return TaskType.SUBTASK;
     }
 
     @Override

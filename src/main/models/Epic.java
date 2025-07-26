@@ -1,6 +1,8 @@
 package main.models;
 
 import main.enums.Status;
+import main.enums.TaskType;
+
 import java.time.Duration;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -14,8 +16,9 @@ public class Epic extends Task {
         super(name, description, id, status, null, Duration.ZERO);
     }
 
+    // Возвращаем неизменяемую копию списка
     public List<Integer> getSubtaskIds() {
-        return new ArrayList<>(subtaskIds);
+        return List.copyOf(subtaskIds);
     }
 
     public void addSubtask(int id) {
@@ -35,30 +38,31 @@ public class Epic extends Task {
         }
 
         LocalDateTime earliestStart = null;
-        LocalDateTime latestCalculatedEnd = null;
-        boolean hasValidTasks = false;
+        LocalDateTime latestEnd = null;
+        Duration totalDuration = Duration.ZERO;
+        int validTasksCount = 0;
 
         for (Subtask subtask : subtasks) {
             if (subtask == null || subtask.getStartTime() == null || subtask.getDuration() == null) {
                 continue;
             }
 
-            hasValidTasks = true;
+            validTasksCount++;
             LocalDateTime subtaskStart = subtask.getStartTime();
-            LocalDateTime subtaskEnd = subtaskStart.plus(subtask.getDuration());
+            LocalDateTime subtaskEnd = subtask.getEndTime();
 
             if (earliestStart == null || subtaskStart.isBefore(earliestStart)) {
                 earliestStart = subtaskStart;
             }
 
-            if (latestCalculatedEnd == null || subtaskEnd.isAfter(latestCalculatedEnd)) {
-                latestCalculatedEnd = subtaskEnd;
+            if (latestEnd == null || subtaskEnd.isAfter(latestEnd)) {
+                latestEnd = subtaskEnd;
             }
         }
 
-        if (hasValidTasks) {
+        if (validTasksCount > 0) {
             this.startTime = earliestStart;
-            this.duration = Duration.between(earliestStart, latestCalculatedEnd);
+            this.duration = Duration.between(earliestStart, latestEnd);
         } else {
             resetTime();
         }
@@ -70,33 +74,45 @@ public class Epic extends Task {
     }
 
     @Override
-    public String getTaskType() {
-        return "EPIC";
+    public LocalDateTime getEndTime() {
+        if (startTime == null || duration == null) {
+            return null;
+        }
+        return startTime.plus(duration);
+    }
+
+    @Override
+    public TaskType getTaskType() {
+        return TaskType.EPIC;
     }
 
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
+        if (!super.equals(o)) return false;
         Epic epic = (Epic) o;
-        return id == epic.id;
+        return subtaskIds.equals(epic.subtaskIds);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(id);
+        return Objects.hash(super.hashCode(), subtaskIds);
     }
+
+
 
     @Override
     public String toString() {
         return "Epic{" +
                 "id=" + id +
                 ", name='" + name + '\'' +
+                ", description='" + description + '\'' +
                 ", status=" + status +
                 ", subtaskIds=" + subtaskIds +
                 ", startTime=" + startTime +
                 ", duration=" + duration +
-                ", endTime=" + getEndTime() + // Используем геттер
+                ", endTime=" + getEndTime() +
                 '}';
     }
 }
