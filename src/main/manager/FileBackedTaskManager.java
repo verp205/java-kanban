@@ -57,12 +57,8 @@ public class FileBackedTaskManager extends InMemoryTaskManager {
 
     @Override
     public void updateSubtask(Subtask subtask) {
-        try {
             super.updateSubtask(subtask);
             save();
-        } catch (IllegalArgumentException e) {
-            throw e;
-        }
     }
 
     @Override

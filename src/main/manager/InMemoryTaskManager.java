@@ -76,7 +76,13 @@ public class InMemoryTaskManager implements TaskManager {
     @Override
     public Epic createEpic(Epic epic) {
         epic.setPriority(null);
-        return safeAdd(epic, epics);
+        if (epic.getId() == 0) {
+            epic.setId(nextId++);
+        } else if (epic.getId() >= nextId) {
+            nextId = epic.getId() + 1;
+        }
+        epics.put(epic.getId(), epic);
+        return epic;
     }
 
     // Методы удаления задач
@@ -109,7 +115,6 @@ public class InMemoryTaskManager implements TaskManager {
     public void deleteEpic(int id) {
         Epic epic = epics.remove(id);
         if (epic != null) {
-            sortedTasks.remove(epic);
             historyManager.remove(id);
 
             // Удаляем все подзадачи эпика
@@ -199,9 +204,7 @@ public class InMemoryTaskManager implements TaskManager {
     @Override
     public Task getTask(int id) {
         Task task = tasks.get(id);
-        if (task != null) {
-            historyManager.add(task);
-        }
+        historyManager.add(task);
         return task;
     }
 
@@ -236,7 +239,6 @@ public class InMemoryTaskManager implements TaskManager {
     @Override
     public void deleteAllEpics() {
         for (Epic epic : epics.values()) {
-            sortedTasks.remove(epic);
             historyManager.remove(epic.getId());
         }
         epics.clear();
