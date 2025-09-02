@@ -1,59 +1,98 @@
 package main.models;
 
+import main.enums.Priority;
 import main.enums.Status;
 import main.enums.TaskType;
+
+import java.time.Duration;
+import java.time.LocalDateTime;
 import java.util.Objects;
 
 public class Task {
-    private String name;
-    private String desc;
-    private int id;
-    private Status status;
-    private TaskType type;
+    protected int id;
+    protected String name;
+    protected String description;
+    protected Status status;
+    protected LocalDateTime startTime;
+    protected Duration duration;
+    protected Priority priority;
 
-    public Task(String name, String desc, int id, Status status, TaskType type) {
+    public Task(String name, String description, int id, Status status,
+                LocalDateTime startTime, Duration duration) {
         this.name = name;
-        this.desc = desc;
+        this.description = description;
         this.id = id;
         this.status = status;
-        this.type = type;
+        this.startTime = startTime;
+        this.duration = duration == null ? Duration.ZERO : duration;
+        this.priority = null;
+    }
+
+    // Геттеры
+    public int getId() {
+        return id;
     }
 
     public String getName() {
         return name;
     }
 
-    public String getDesc() {
-        return desc;
-    }
-
-    public int getId() {
-        return id;
+    public String getDescription() {
+        return description;
     }
 
     public Status getStatus() {
         return status;
     }
 
-    public void setName(String name) {
-        this.name = name;
+    public LocalDateTime getStartTime() {
+        return startTime;
     }
 
-    public void setDesc(String desc) {
-        this.desc = desc;
+    public Duration getDuration() {
+        return duration;
+    }
+
+    public Priority getPriority() {
+        return priority;
+    }
+
+    // Вычисляемый endTime
+    public LocalDateTime getEndTime() {
+        return startTime != null ? startTime.plus(duration) : null;
+    }
+
+    // Сеттеры
+    public void setId(int id) {
+        this.id = id;
     }
 
     public void setStatus(Status status) {
         this.status = status;
     }
 
-    public TaskType getType() {
-        return type;
+    public void setStartTime(LocalDateTime startTime) {
+        this.startTime = startTime;
     }
 
-    public String toCsvString() {
-        return String.format("%d,%s,%s,%s,%s",
-                id, type, name, status, desc);
+    public void setDuration(Duration duration) {
+        this.duration = duration != null ? duration : Duration.ZERO;
+    }
+
+    public void setPriority(Priority priority) {
+        this.priority = priority;
+    }
+
+    public TaskType getTaskType() {
+        return TaskType.TASK;
+    }
+
+    public void setName(String name) {
+        this.name = name;
+    }
+
+    public void setDescription(String description) {
+        this.description = description;
     }
 
     @Override
@@ -61,7 +100,7 @@ public class Task {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         Task task = (Task) o;
-        return id == task.id;
+        return id == task.id; // Сравниваем только по ID
     }
 
     @Override
@@ -69,17 +108,12 @@ public class Task {
         return Objects.hash(id);
     }
 
-
     @Override
     public String toString() {
         return "Task{" +
                 "id=" + id +
-                ", type=" + type +
                 ", name='" + name + '\'' +
-                ", desc='" + desc + '\'' +
                 ", status=" + status +
                 '}';
     }
-
 }
-

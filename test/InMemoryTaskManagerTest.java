@@ -1,158 +1,110 @@
 import main.enums.Status;
-import main.enums.TaskType;
 import main.manager.InMemoryTaskManager;
-import main.manager.TaskManager;
-import main.models.Epic;
-import main.models.Subtask;
-import main.models.Task;
-import org.junit.jupiter.api.BeforeEach;
+import main.models.*;
 import org.junit.jupiter.api.Test;
 
-import java.util.ArrayList;
+import java.time.Duration;
+import java.time.LocalDateTime;
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-class InMemoryTaskManagerTest {
-    private TaskManager taskManager;
+class InMemoryTaskManagerTest extends TaskManagerTest<InMemoryTaskManager> {
 
-    @BeforeEach
-    void setUp() {
-        taskManager = new InMemoryTaskManager();
-    }
-
-    // ---- TASK TESTS ----
-
-    @Test
-    void createAndGetTask_shouldReturnCreatedTask() {
-        Task task = new Task("Task", "Desc", 0, Status.NEW, TaskType.TASK);
-        Task created = taskManager.createTask(task);
-        Task fetched = taskManager.getTask(created.getId());
-
-        assertEquals(created, fetched);
-        assertEquals(TaskType.TASK, fetched.getType());
+    @Override
+    protected InMemoryTaskManager createManager() {
+        return new InMemoryTaskManager();
     }
 
     @Test
-    void getAllTasks_shouldReturnAllCreatedTasks() {
-        taskManager.createTask(new Task("T1", "Desc", 0, Status.NEW, TaskType.TASK));
-        taskManager.createTask(new Task("T2", "Desc", 0, Status.NEW, TaskType.TASK));
+    void shouldPrioritizeTasksByStartTime() {
+        Task task1 = manager.createTask(new Task("Task1", "Desc", 0, Status.NEW,
+                LocalDateTime.of(2025, 1, 2, 10, 0), Duration.ofHours(1)));
 
-        ArrayList<Task> tasks = taskManager.getAllTasks();
-        assertEquals(2, tasks.size());
-        assertEquals(TaskType.TASK, tasks.get(0).getType());
+        Task task2 = manager.createTask(new Task("Task2", "Desc", 0, Status.NEW,
+                LocalDateTime.of(2025, 1, 1, 9, 0), Duration.ofHours(1)));
+
+        List<Task> prioritized = manager.getPrioritizedTasks();
+
+        assertEquals(2, prioritized.size());
+        assertEquals(task2.getId(), prioritized.get(0).getId());
+        assertEquals(task1.getId(), prioritized.get(1).getId());
     }
 
     @Test
-    void updateTask_shouldModifyExistingTask() {
-        Task task = taskManager.createTask(new Task("T1", "Desc", 0, Status.NEW, TaskType.TASK));
-        Task updated = new Task("Updated", "New Desc", task.getId(), Status.DONE, TaskType.TASK);
-        taskManager.updateTask(updated);
+    void shouldHandleTasksWithoutTime() {
+        Task task1 = manager.createTask(new Task("Task1", "Desc", 0, Status.NEW,
+                null, null));
 
-        Task result = taskManager.getTask(task.getId());
-        assertEquals("Updated", result.getName());
-        assertEquals(Status.DONE, result.getStatus());
-        assertEquals(TaskType.TASK, result.getType());
+        Task task2 = manager.createTask(new Task("Task2", "Desc", 0, Status.NEW,
+                LocalDateTime.of(2025, 1, 1, 9, 0), Duration.ofHours(1)));
+
+        List<Task> prioritized = manager.getPrioritizedTasks();
+
+        assertEquals(2, prioritized.size());
+        assertEquals(task2.getId(), prioritized.get(0).getId()); // Задача со временем должна быть первой
     }
 
     @Test
-    void deleteTask_shouldRemoveTask() {
-        Task task = taskManager.createTask(new Task("Task", "Desc", 0, Status.NEW, TaskType.TASK));
-        taskManager.deleteTask(task.getId());
-        assertNull(taskManager.getTask(task.getId()));
+    void shouldUpdateEpicTimeWhenSubtasksChange() {
+        Epic epic = manager.createEpic(new Epic("Epic", "Desc", 0, Status.NEW));
+
+        Subtask subtask1 = manager.createSubtask(new Subtask("Sub1", "Desc", 0, Status.NEW,
+                epic.getId(), LocalDateTime.of(2025, 1, 1, 10, 0), Duration.ofHours(1)));
+
+        Subtask subtask2 = manager.createSubtask(new Subtask("Sub2", "Desc", 0, Status.NEW,
+                epic.getId(), LocalDateTime.of(2025, 1, 1, 12, 0), Duration.ofHours(1)));
+
+        Epic updatedEpic = manager.getEpic(epic.getId());
+
+        assertEquals(subtask1.getStartTime(), updatedEpic.getStartTime());
+        assertEquals(subtask2.getEndTime(), updatedEpic.getEndTime());
+
+        // Удаляем подзадачу и проверяем обновление времени
+        manager.deleteSubtask(subtask2.getId());
+        updatedEpic = manager.getEpic(epic.getId());
+        assertEquals(subtask1.getStartTime(), updatedEpic.getStartTime());
+        assertEquals(subtask1.getEndTime(), updatedEpic.getEndTime());
     }
 
     @Test
-    void deleteAllTasks_shouldClearTaskList() {
-        taskManager.createTask(new Task("Task1", "Desc", 0, Status.NEW, TaskType.TASK));
-        taskManager.createTask(new Task("Task2", "Desc", 0, Status.NEW, TaskType.TASK));
-        taskManager.deleteAllTasks();
+    void shouldAddTasksToHistory() {
+        Task task = manager.createTask(new Task("Task", "Desc", 0, Status.NEW,
+                LocalDateTime.now(), Duration.ofMinutes(30)));
 
-        assertTrue(taskManager.getAllTasks().isEmpty());
-    }
+        Epic epic = manager.createEpic(new Epic("Epic", "Desc", 0, Status.NEW));
 
-    // ---- EPIC TESTS ----
+        Subtask subtask = manager.createSubtask(new Subtask("Sub", "Desc", 0, Status.NEW,
+                epic.getId(), LocalDateTime.now().plusHours(1), Duration.ofMinutes(30)));
 
-    @Test
-    void createAndGetEpic_shouldReturnCreatedEpic() {
-        Epic epic = taskManager.createEpic(new Epic("Epic", "Desc", 0, Status.NEW));
-        Epic fetched = taskManager.getEpic(epic.getId());
+        // Получаем задачи, чтобы добавить в историю
+        manager.getTask(task.getId());
+        manager.getEpic(epic.getId());
+        manager.getSubtask(subtask.getId());
 
-        assertEquals(epic, fetched);
-        assertEquals(TaskType.EPIC, fetched.getType());
-    }
-
-    @Test
-    void getAllEpics_shouldReturnAllCreatedEpics() {
-        taskManager.createEpic(new Epic("E1", "Desc", 0, Status.NEW));
-        taskManager.createEpic(new Epic("E2", "Desc", 0, Status.NEW));
-
-        ArrayList<Epic> epics = taskManager.getAllEpics();
-        assertEquals(2, epics.size());
-        assertEquals(TaskType.EPIC, epics.get(0).getType());
+        assertEquals(3, manager.getHistory().size());
     }
 
     @Test
-    void updateEpic_shouldModifyExistingEpic() {
-        Epic epic = taskManager.createEpic(new Epic("Epic", "Desc", 0, Status.NEW));
-        Epic updated = new Epic("Updated", "New Desc", epic.getId(), Status.NEW);
-        taskManager.updateEpic(updated);
+    void shouldNotDuplicateTasksInHistory() {
+        Task task = manager.createTask(new Task("Task", "Desc", 0, Status.NEW,
+                LocalDateTime.now(), Duration.ofMinutes(30)));
 
-        Epic result = taskManager.getEpic(epic.getId());
-        assertEquals("Updated", result.getName());
-        assertEquals(TaskType.EPIC, result.getType());
+        manager.getTask(task.getId());
+        manager.getTask(task.getId());
+        manager.getTask(task.getId());
+
+        assertEquals(1, manager.getHistory().size());
     }
 
     @Test
-    void deleteEpic_shouldRemoveEpicAndSubtasks() {
-        Epic epic = taskManager.createEpic(new Epic("Epic", "Desc", 0, Status.NEW));
-        Subtask sub = taskManager.createSubtask(new Subtask("Sub", "Desc", 0, Status.NEW, epic.getId()));
-        taskManager.deleteEpic(epic.getId());
+    void shouldRemoveTaskFromHistoryWhenDeleted() {
+        Task task = manager.createTask(new Task("Task", "Desc", 0, Status.NEW,
+                LocalDateTime.now(), Duration.ofMinutes(30)));
 
-        assertNull(taskManager.getEpic(epic.getId()));
-        assertNull(taskManager.getSubtask(sub.getId()));
-    }
+        manager.getTask(task.getId());
+        manager.deleteTask(task.getId());
 
-    // ---- SUBTASK TESTS ----
-
-    @Test
-    void createAndGetSubtask_shouldReturnCreatedSubtask() {
-        Epic epic = taskManager.createEpic(new Epic("Epic", "Desc", 0, Status.NEW));
-        Subtask sub = taskManager.createSubtask(new Subtask("Sub", "Desc", 0, Status.NEW, epic.getId()));
-        Subtask fetched = taskManager.getSubtask(sub.getId());
-
-        assertEquals(sub, fetched);
-        assertEquals(TaskType.SUBTASK, fetched.getType());
-    }
-
-    @Test
-    void updateSubtask_shouldModifySubtaskAndAffectEpicStatus() {
-        Epic epic = taskManager.createEpic(new Epic("Epic", "Desc", 0, Status.NEW));
-        Subtask sub = taskManager.createSubtask(new Subtask("Sub", "Desc", 0, Status.NEW, epic.getId()));
-        Subtask updated = new Subtask("Sub", "Desc", sub.getId(), Status.DONE, epic.getId());
-
-        taskManager.updateSubtask(updated);
-        assertEquals(Status.DONE, taskManager.getSubtask(sub.getId()).getStatus());
-        assertEquals(Status.DONE, taskManager.getEpic(epic.getId()).getStatus());
-        assertEquals(TaskType.SUBTASK, taskManager.getSubtask(sub.getId()).getType());
-    }
-
-    // ---- HISTORY TESTS ----
-
-    @Test
-    void getHistory_shouldReturnVisitedTasksOnly() {
-        Task task = taskManager.createTask(new Task("T", "Desc", 0, Status.NEW, TaskType.TASK));
-        Epic epic = taskManager.createEpic(new Epic("E", "Desc", 0, Status.NEW));
-        Subtask sub = taskManager.createSubtask(new Subtask("S", "Desc", 0, Status.NEW, epic.getId()));
-
-        taskManager.getTask(task.getId());
-        taskManager.getEpic(epic.getId());
-        taskManager.getSubtask(sub.getId());
-
-        List<Task> history = taskManager.getHistory();
-        assertEquals(3, history.size());
-        assertEquals(TaskType.TASK, history.get(0).getType());
-        assertEquals(TaskType.EPIC, history.get(1).getType());
-        assertEquals(TaskType.SUBTASK, history.get(2).getType());
+        assertTrue(manager.getHistory().isEmpty());
     }
 }
