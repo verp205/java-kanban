@@ -1,6 +1,6 @@
 package main.http.handlers;
 
-import com.google.gson.*;
+import com.google.gson.Gson;
 import com.sun.net.httpserver.HttpExchange;
 import com.sun.net.httpserver.HttpHandler;
 import main.http.BaseHttpHandler;
@@ -11,37 +11,13 @@ import main.models.Subtask;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
-import java.time.Duration;
-import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.stream.Collectors;
 
 public class EpicHandler extends BaseHttpHandler implements HttpHandler {
-    private final TaskManager manager;
-    private final Gson gson;
 
     public EpicHandler(TaskManager manager, Gson gson) {
-        this.manager = manager;
-        this.gson = gson;
-    }
-
-    private Gson createGson() {
-        GsonBuilder builder = new GsonBuilder();
-
-        // Адаптер для LocalDateTime
-        builder.registerTypeAdapter(LocalDateTime.class, (JsonSerializer<LocalDateTime>) (src, typeOfSrc, context) ->
-                new JsonPrimitive(src.format(DateTimeFormatter.ISO_LOCAL_DATE_TIME)));
-        builder.registerTypeAdapter(LocalDateTime.class, (JsonDeserializer<LocalDateTime>) (json, typeOfT, context) ->
-                LocalDateTime.parse(json.getAsString(), DateTimeFormatter.ISO_LOCAL_DATE_TIME));
-
-        // Адаптер для Duration
-        builder.registerTypeAdapter(Duration.class, (JsonSerializer<Duration>) (src, typeOfSrc, context) ->
-                new JsonPrimitive(src.toMinutes()));
-        builder.registerTypeAdapter(Duration.class, (JsonDeserializer<Duration>) (json, typeOfT, context) ->
-                Duration.ofMinutes(json.getAsLong()));
-
-        return builder.create();
+        super(manager, gson);
     }
 
     @Override
@@ -73,12 +49,17 @@ public class EpicHandler extends BaseHttpHandler implements HttpHandler {
                 InputStream is = h.getRequestBody();
                 String body = new String(is.readAllBytes(), StandardCharsets.UTF_8);
                 Epic epic = gson.fromJson(body, Epic.class);
-                manager.createEpic(epic);
-                sendText(h, gson.toJson(epic), 201);
+                if (epic.getId() == 0) {
+                    manager.createEpic(epic);
+                    sendText(h, gson.toJson(epic), 201);
+                } else {
+                    manager.updateEpic(epic);
+                    sendText(h, gson.toJson(epic), 200);
+                }
             } else if ("DELETE".equals(method) && parts.length == 3) {
                 int id = Integer.parseInt(parts[2]);
                 manager.deleteEpic(id);
-                sendText(h, "{\"result\":\"deleted\"}", 200);
+                sendNoContent(h);
             }
         } catch (Exception e) {
             sendError(h, e.getMessage());

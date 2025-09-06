@@ -12,12 +12,9 @@ import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
 
 public class SubtaskHandler extends BaseHttpHandler implements HttpHandler {
-    private final TaskManager manager;
-    private final Gson gson;
 
     public SubtaskHandler(TaskManager manager, Gson gson) {
-        this.manager = manager;
-        this.gson = gson;
+        super(manager, gson);
     }
 
     @Override
@@ -48,12 +45,12 @@ public class SubtaskHandler extends BaseHttpHandler implements HttpHandler {
                     sendText(h, gson.toJson(subtask), 201);
                 } else {
                     manager.updateSubtask(subtask);
-                    sendText(h, gson.toJson(subtask), 201);
+                    sendText(h, gson.toJson(subtask), 200);
                 }
             } else if ("DELETE".equals(method) && parts.length == 3) {
                 int id = Integer.parseInt(parts[2]);
                 manager.deleteSubtask(id);
-                sendText(h, "{\"result\":\"deleted\"}", 200);
+                sendNoContent(h);
             }
         } catch (Exception e) {
             sendError(h, e.getMessage());

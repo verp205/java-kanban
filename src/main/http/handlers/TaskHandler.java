@@ -12,12 +12,9 @@ import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
 
 public class TaskHandler extends BaseHttpHandler implements HttpHandler {
-    private final TaskManager manager;
-    private final Gson gson;
 
     public TaskHandler(TaskManager manager, Gson gson) {
-        this.manager = manager;
-        this.gson = gson;
+        super(manager, gson);
     }
 
     @Override
@@ -48,12 +45,12 @@ public class TaskHandler extends BaseHttpHandler implements HttpHandler {
                     sendText(h, gson.toJson(task), 201);
                 } else {
                     manager.updateTask(task);
-                    sendText(h, gson.toJson(task), 201);
+                    sendText(h, gson.toJson(task), 200);
                 }
             } else if ("DELETE".equals(method) && parts.length == 3) {
                 int id = Integer.parseInt(parts[2]);
                 manager.deleteTask(id);
-                sendText(h, "{\"result\":\"deleted\"}", 200);
+                sendNoContent(h);
             }
         } catch (Exception e) {
             sendError(h, e.getMessage());
