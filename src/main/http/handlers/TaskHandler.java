@@ -8,7 +8,6 @@ import main.manager.TaskManager;
 import main.models.Task;
 
 import java.io.IOException;
-import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
 
 public class TaskHandler extends BaseHttpHandler implements HttpHandler {
@@ -37,8 +36,7 @@ public class TaskHandler extends BaseHttpHandler implements HttpHandler {
                     }
                 }
             } else if ("POST".equals(method)) {
-                InputStream is = h.getRequestBody();
-                String body = new String(is.readAllBytes(), StandardCharsets.UTF_8);
+                String body = new String(h.getRequestBody().readAllBytes(), StandardCharsets.UTF_8);
                 Task task = gson.fromJson(body, Task.class);
                 if (task.getId() == 0) {
                     manager.createTask(task);
@@ -51,6 +49,8 @@ public class TaskHandler extends BaseHttpHandler implements HttpHandler {
                 int id = Integer.parseInt(parts[2]);
                 manager.deleteTask(id);
                 sendNoContent(h);
+            } else {
+                sendMethodNotAllowed(h, method);
             }
         } catch (Exception e) {
             sendError(h, e.getMessage());

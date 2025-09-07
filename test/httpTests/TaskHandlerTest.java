@@ -1,4 +1,4 @@
-package test.http;
+package httpTests;
 
 import com.google.gson.Gson;
 import main.enums.Status;
@@ -48,44 +48,75 @@ class TaskHandlerTest {
                 .uri(new URI("http://localhost:8080/tasks"))
                 .GET()
                 .build();
-
         HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());
-
         assertEquals(200, response.statusCode());
         assertEquals("[]", response.body());
     }
 
     @Test
-    void testGetTaskById() throws Exception {
-        Task task = new Task("Task 1", "desc", 1, Status.NEW,
+    void testCreateTask() throws Exception {
+        Task task = new Task("Task 1", "desc", 0, Status.NEW,
                 LocalDateTime.now(), Duration.ofMinutes(15));
-        manager.createTask(task);
+        String body = gson.toJson(task);
 
         HttpRequest request = HttpRequest.newBuilder()
-                .uri(new URI("http://localhost:8080/tasks/1"))
-                .GET()
+                .uri(new URI("http://localhost:8080/tasks"))
+                .POST(HttpRequest.BodyPublishers.ofString(body))
                 .build();
-
         HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());
 
-        assertEquals(200, response.statusCode());
-        Task fromJson = gson.fromJson(response.body(), Task.class);
-        assertEquals(task.getId(), fromJson.getId());
+        assertEquals(201, response.statusCode());
+        Task created = gson.fromJson(response.body(), Task.class);
+        assertNotEquals(0, created.getId());
+        assertEquals("Task 1", created.getName());
     }
 
     @Test
-    void testDeleteTask() throws Exception {
-        Task task = new Task("Task 2", "desc", 2, Status.NEW,
-                LocalDateTime.now(), Duration.ofMinutes(30));
-        manager.createTask(task);
+    void testUpdateTask() throws Exception {
+        Task task = manager.createTask(new Task("Task", "desc", 1, Status.NEW,
+                LocalDateTime.now(), Duration.ofMinutes(30)));
+        task.setName("Updated Task");
+        String body = gson.toJson(task);
 
         HttpRequest request = HttpRequest.newBuilder()
-                .uri(new URI("http://localhost:8080/tasks/2"))
+                .uri(new URI("http://localhost:8080/tasks"))
+                .POST(HttpRequest.BodyPublishers.ofString(body))
+                .build();
+        HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());
+
+        assertEquals(200, response.statusCode());
+        Task updated = gson.fromJson(response.body(), Task.class);
+        assertEquals("Updated Task", updated.getName());
+    }
+
+    @Test
+    void testGetTaskByIdNotFound() throws Exception {
+        HttpRequest request = HttpRequest.newBuilder()
+                .uri(new URI("http://localhost:8080/tasks/999"))
+                .GET()
+                .build();
+        HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());
+        assertEquals(404, response.statusCode());
+        assertTrue(response.body().contains("не найдена"));
+    }
+
+    @Test
+    void testDeleteTaskNotFound() throws Exception {
+        HttpRequest request = HttpRequest.newBuilder()
+                .uri(new URI("http://localhost:8080/tasks/999"))
                 .DELETE()
                 .build();
-
         HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());
         assertEquals(204, response.statusCode());
-        assertNull(manager.getTask(2));
+    }
+
+    @Test
+    void testInvalidJsonInPost() throws Exception {
+        HttpRequest request = HttpRequest.newBuilder()
+                .uri(new URI("http://localhost:8080/tasks"))
+                .POST(HttpRequest.BodyPublishers.ofString("{bad json}"))
+                .build();
+        HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());
+        assertEquals(500, response.statusCode());
     }
 }

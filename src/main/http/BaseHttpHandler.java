@@ -1,15 +1,14 @@
 package main.http;
 
 import com.google.gson.Gson;
+import com.sun.net.httpserver.HttpExchange;
 import main.manager.TaskManager;
 
-import com.sun.net.httpserver.HttpExchange;
-
 import java.io.IOException;
+import java.io.OutputStream;
 import java.nio.charset.StandardCharsets;
 
 public abstract class BaseHttpHandler {
-
     protected final TaskManager manager;
     protected final Gson gson;
 
@@ -18,28 +17,42 @@ public abstract class BaseHttpHandler {
         this.gson = gson;
     }
 
-    protected void sendText(HttpExchange h, String text, int code) throws IOException {
-        byte[] resp = text.getBytes(StandardCharsets.UTF_8);
-        h.getResponseHeaders().add("Content-Type", "application/json;charset=utf-8");
-        h.sendResponseHeaders(code, resp.length);
-        h.getResponseBody().write(resp);
-        h.close();
+    protected void sendText(HttpExchange exchange, String response, int statusCode) throws IOException {
+        byte[] bytes = response.getBytes(StandardCharsets.UTF_8);
+        exchange.getResponseHeaders().add("Content-Type", "application/json; charset=UTF-8");
+        exchange.sendResponseHeaders(statusCode, bytes.length);
+        try (OutputStream os = exchange.getResponseBody()) {
+            os.write(bytes);
+        }
     }
 
-    protected void sendNotFound(HttpExchange h, String message) throws IOException {
-        sendText(h, "{\"error\":\"" + message + "\"}", 404);
+    protected void sendNotFound(HttpExchange exchange, String message) throws IOException {
+        byte[] bytes = message.getBytes(StandardCharsets.UTF_8);
+        exchange.sendResponseHeaders(404, bytes.length);
+        try (OutputStream os = exchange.getResponseBody()) {
+            os.write(bytes);
+        }
     }
 
-    protected void sendHasInteractions(HttpExchange h, String message) throws IOException {
-        sendText(h, "{\"error\":\"" + message + "\"}", 406);
+    protected void sendNoContent(HttpExchange exchange) throws IOException {
+        exchange.sendResponseHeaders(204, -1); // тело не требуется
+        exchange.close();
     }
 
-    protected void sendError(HttpExchange h, String message) throws IOException {
-        sendText(h, "{\"error\":\"" + message + "\"}", 500);
+    protected void sendError(HttpExchange exchange, String message) throws IOException {
+        byte[] bytes = message.getBytes(StandardCharsets.UTF_8);
+        exchange.sendResponseHeaders(500, bytes.length);
+        try (OutputStream os = exchange.getResponseBody()) {
+            os.write(bytes);
+        }
     }
 
-    protected void sendNoContent(HttpExchange h) throws IOException {
-        h.sendResponseHeaders(204, -1);
-        h.close();
+    protected void sendMethodNotAllowed(HttpExchange exchange, String method) throws IOException {
+        String message = "Метод " + method + " не поддерживается";
+        byte[] bytes = message.getBytes(StandardCharsets.UTF_8);
+        exchange.sendResponseHeaders(405, bytes.length);
+        try (OutputStream os = exchange.getResponseBody()) {
+            os.write(bytes);
+        }
     }
 }

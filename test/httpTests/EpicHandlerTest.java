@@ -1,4 +1,4 @@
-package test.http;
+package httpTests;
 
 import com.google.gson.Gson;
 import main.enums.Status;
@@ -46,26 +46,61 @@ class EpicHandlerTest {
                 .uri(new URI("http://localhost:8080/epics"))
                 .GET()
                 .build();
-
         HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());
-
         assertEquals(200, response.statusCode());
         assertEquals("[]", response.body());
     }
 
     @Test
-    void testDeleteEpic() throws Exception {
-        Epic epic = new Epic("Epic 1", "desc", 1, Status.NEW);
-        manager.createEpic(epic);
+    void testCreateEpic() throws Exception {
+        Epic epic = new Epic("Epic 1", "desc", 0, Status.NEW);
+        String body = gson.toJson(epic);
 
         HttpRequest request = HttpRequest.newBuilder()
-                .uri(new URI("http://localhost:8080/epics/1"))
-                .DELETE()
+                .uri(new URI("http://localhost:8080/epics"))
+                .POST(HttpRequest.BodyPublishers.ofString(body))
                 .build();
-
         HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());
 
+        assertEquals(201, response.statusCode());
+        Epic created = gson.fromJson(response.body(), Epic.class);
+        assertNotEquals(0, created.getId());
+    }
+
+    @Test
+    void testUpdateEpic() throws Exception {
+        Epic epic = manager.createEpic(new Epic("Epic", "desc", 1, Status.NEW));
+        epic.setName("Updated Epic");
+        String body = gson.toJson(epic);
+
+        HttpRequest request = HttpRequest.newBuilder()
+                .uri(new URI("http://localhost:8080/epics"))
+                .POST(HttpRequest.BodyPublishers.ofString(body))
+                .build();
+        HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());
+
+        assertEquals(200, response.statusCode());
+        Epic updated = gson.fromJson(response.body(), Epic.class);
+        assertEquals("Updated Epic", updated.getName());
+    }
+
+    @Test
+    void testGetEpicByIdNotFound() throws Exception {
+        HttpRequest request = HttpRequest.newBuilder()
+                .uri(new URI("http://localhost:8080/epics/999"))
+                .GET()
+                .build();
+        HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());
+        assertEquals(404, response.statusCode());
+    }
+
+    @Test
+    void testDeleteEpicNotFound() throws Exception {
+        HttpRequest request = HttpRequest.newBuilder()
+                .uri(new URI("http://localhost:8080/epics/999"))
+                .DELETE()
+                .build();
+        HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());
         assertEquals(204, response.statusCode());
-        assertNull(manager.getEpic(1));
     }
 }

@@ -60,6 +60,8 @@ public class EpicHandler extends BaseHttpHandler implements HttpHandler {
                 int id = Integer.parseInt(parts[2]);
                 manager.deleteEpic(id);
                 sendNoContent(h);
+            } else {
+                sendMethodNotAllowed(h, method);
             }
         } catch (Exception e) {
             sendError(h, e.getMessage());

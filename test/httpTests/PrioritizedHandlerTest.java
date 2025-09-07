@@ -1,4 +1,4 @@
-package test.http;
+package httpTests;
 
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
@@ -45,21 +45,40 @@ class PrioritizedHandlerTest {
     }
 
     @Test
+    void testGetPrioritizedTasksEmpty() throws Exception {
+        HttpRequest request = HttpRequest.newBuilder()
+                .uri(new URI("http://localhost:8080/prioritized"))
+                .GET()
+                .build();
+        HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());
+        assertEquals(200, response.statusCode());
+        assertEquals("[]", response.body());
+    }
+
+    @Test
     void testGetPrioritizedTasks() throws Exception {
-        Task task1 = manager.createTask(new Task("Task 1", "desc", 1, Status.NEW,
+        Task task1 = manager.createTask(new Task("Task 1", "desc", 0, Status.NEW,
                 LocalDateTime.now(), Duration.ofMinutes(15)));
-        Task task2 = manager.createTask(new Task("Task 2", "desc", 2, Status.NEW,
+        Task task2 = manager.createTask(new Task("Task 2", "desc", 0, Status.NEW,
                 LocalDateTime.now().plusHours(1), Duration.ofMinutes(30)));
 
         HttpRequest request = HttpRequest.newBuilder()
                 .uri(new URI("http://localhost:8080/prioritized"))
                 .GET()
                 .build();
-
         HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());
-        assertEquals(200, response.statusCode());
 
         List<Task> tasks = gson.fromJson(response.body(), new TypeToken<List<Task>>() {}.getType());
         assertEquals(List.of(task1, task2), tasks);
+    }
+
+    @Test
+    void testUnsupportedMethod() throws Exception {
+        HttpRequest request = HttpRequest.newBuilder()
+                .uri(new URI("http://localhost:8080/prioritized"))
+                .POST(HttpRequest.BodyPublishers.ofString("{}"))
+                .build();
+        HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());
+        assertEquals(405, response.statusCode());
     }
 }

@@ -19,6 +19,8 @@ public class PrioritizedHandler extends BaseHttpHandler implements HttpHandler {
         try {
             if ("GET".equals(h.getRequestMethod())) {
                 sendText(h, gson.toJson(manager.getPrioritizedTasks()), 200);
+            } else {
+                sendMethodNotAllowed(h, h.getRequestMethod());
             }
         } catch (Exception e) {
             sendError(h, e.getMessage());

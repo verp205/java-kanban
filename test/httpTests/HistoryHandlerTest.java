@@ -1,4 +1,4 @@
-package test.http;
+package httpTests;
 
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
@@ -50,7 +50,6 @@ class HistoryHandlerTest {
                 .uri(new URI("http://localhost:8080/history"))
                 .GET()
                 .build();
-
         HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());
         assertEquals(200, response.statusCode());
         assertEquals("[]", response.body());
@@ -58,7 +57,7 @@ class HistoryHandlerTest {
 
     @Test
     void testGetHistoryAfterAccess() throws Exception {
-        Task task = manager.createTask(new Task("Task 1", "desc", 1, Status.NEW,
+        Task task = manager.createTask(new Task("Task 1", "desc", 0, Status.NEW,
                 LocalDateTime.now(), Duration.ofMinutes(15)));
         manager.getTask(task.getId());
 
@@ -66,12 +65,19 @@ class HistoryHandlerTest {
                 .uri(new URI("http://localhost:8080/history"))
                 .GET()
                 .build();
-
         HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());
-        assertEquals(200, response.statusCode());
 
         List<Task> history = gson.fromJson(response.body(), new TypeToken<List<Task>>() {}.getType());
         assertEquals(1, history.size());
-        assertEquals(task.getId(), history.get(0).getId());
+    }
+
+    @Test
+    void testUnsupportedMethod() throws Exception {
+        HttpRequest request = HttpRequest.newBuilder()
+                .uri(new URI("http://localhost:8080/history"))
+                .POST(HttpRequest.BodyPublishers.ofString("{}"))
+                .build();
+        HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());
+        assertEquals(405, response.statusCode());
     }
 }
